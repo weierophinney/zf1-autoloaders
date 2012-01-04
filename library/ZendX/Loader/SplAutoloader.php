@@ -14,16 +14,18 @@
  *
  * @category   ZendX
  * @package    ZendX_Loader
- * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
+
+if (interface_exists('ZendX_Loader_SplAutoloader')) return;
 
 /**
  * Defines an interface for classes that may register with the spl_autoload 
  * registry
  *
  * @package    ZendX_Loader
- * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 interface ZendX_Loader_SplAutoloader

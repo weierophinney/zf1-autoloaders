@@ -14,8 +14,7 @@
  *
  * @category   ZendX
  * @package    ZendX_Loader
- * @subpackage Exception
- * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -27,9 +26,8 @@ require_once dirname(__FILE__) . '/SplAutoloader.php';
  *
  * Utilizes class-map files to lookup classfile locations.
  * 
- * @catebory   ZendX
  * @package    ZendX_Loader
- * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    New BSD {@link http://framework.zend.com/license/new-bsd}
  */
 class ZendX_Loader_ClassMapAutoloader implements ZendX_Loader_SplAutoloader
@@ -97,7 +95,8 @@ class ZendX_Loader_ClassMapAutoloader implements ZendX_Loader_SplAutoloader
         }
 
         if (!is_array($map)) {
-            throw new InvalidArgumentException('Map file provided does not return a map');
+            require_once dirname(__FILE__) . '/Exception/InvalidArgumentException.php';
+            throw new ZendX_Loader_Exception_InvalidArgumentException('Map file provided does not return a map');
         }
 
         $this->map = array_merge($this->map, $map);
@@ -117,8 +116,9 @@ class ZendX_Loader_ClassMapAutoloader implements ZendX_Loader_SplAutoloader
      */
     public function registerAutoloadMaps($locations)
     {
-        if (!is_array($locations) && !($locations instanceof \Traversable)) {
-            throw new InvalidArgumentException('Map list must be an array or implement Traversable');
+        if (!is_array($locations) && !($locations instanceof Traversable)) {
+            require_once dirname(__FILE__) . '/Exception/InvalidArgumentException.php';
+            throw new ZendX_Loader_Exception_InvalidArgumentException('Map list must be an array or implement Traversable');
         }
         foreach ($locations as $location) {
             $this->registerAutoloadMap($location);
@@ -145,7 +145,7 @@ class ZendX_Loader_ClassMapAutoloader implements ZendX_Loader_SplAutoloader
     public function autoload($class)
     {
         if (isset($this->map[$class])) {
-            include $this->map[$class];
+            require_once $this->map[$class];
         }
     }
 
@@ -156,7 +156,7 @@ class ZendX_Loader_ClassMapAutoloader implements ZendX_Loader_SplAutoloader
      */
     public function register()
     {
-        spl_autoload_register(array($this, 'autoload'));
+        spl_autoload_register(array($this, 'autoload'), true);
     }
 
     /**
@@ -173,18 +173,49 @@ class ZendX_Loader_ClassMapAutoloader implements ZendX_Loader_SplAutoloader
     protected function loadMapFromFile($location)
     {
         if (!file_exists($location)) {
-            throw new InvalidArgumentException('Map file provided does not exist');
+            require_once dirname(__FILE__) . '/Exception/InvalidArgumentException.php';
+            throw new ZendX_Loader_Exception_InvalidArgumentException('Map file provided does not exist');
         }
 
-        $location = realpath($location);
+        if (!$path = self::realPharPath($location)) {
+            $path = realpath($location);
+        }
 
-        if (in_array($location, $this->mapsLoaded)) {
+        if (in_array($path, $this->mapsLoaded)) {
             // Already loaded this map
             return $this;
         }
 
-        $map = include $location;
+        $map = include $path;
 
         return $map;
+    }
+
+    /**
+     * Resolve the real_path() to a file within a phar.
+     *
+     * @see    https://bugs.php.net/bug.php?id=52769 
+     * @param  string $path 
+     * @return string
+     */
+    public static function realPharPath($path)
+    {
+        if (strpos($path, 'phar:///') !== 0) {
+            return;
+        }
+        
+        $parts = explode('/', str_replace(array('/','\\'), '/', substr($path, 8)));
+        $parts = array_values(array_filter($parts, function($p) { return ($p !== '' && $p !== '.'); }));
+
+        array_walk($parts, function ($value, $key) use(&$parts) {
+            if ($value === '..') {
+                unset($parts[$key], $parts[$key-1]);
+                $parts = array_values($parts);
+            }
+        });
+
+        if (file_exists($realPath = 'phar:///' . implode('/', $parts))) {
+            return $realPath;
+        }
     }
 }

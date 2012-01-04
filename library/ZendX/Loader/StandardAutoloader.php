@@ -14,8 +14,7 @@
  *
  * @category   ZendX
  * @package    ZendX_Loader
- * @subpackage Exception
- * @copyright  Copyright (c) 2005-2011 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -30,7 +29,8 @@ require_once dirname(__FILE__) . '/SplAutoloader.php';
  * class is not found, a PHP warning will be raised by include().
  *
  * @package    ZendX_Loader
- * @license New BSD {@link http://framework.zend.com/license/new-bsd}
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license    New BSD {@link http://framework.zend.com/license/new-bsd}
  */
 class ZendX_Loader_StandardAutoloader implements ZendX_Loader_SplAutoloader
 {
@@ -99,7 +99,8 @@ class ZendX_Loader_StandardAutoloader implements ZendX_Loader_SplAutoloader
     public function setOptions($options)
     {
         if (!is_array($options) && !($options instanceof Traversable)) {
-            throw new InvalidArgumentException('Options must be either an array or Traversable');
+            require_once dirname(__FILE__) . '/Exception/InvalidArgumentException.php';
+            throw new ZendX_Loader_Exception_InvalidArgumentException('Options must be either an array or Traversable');
         }
 
         foreach ($options as $type => $pairs) {
@@ -169,7 +170,8 @@ class ZendX_Loader_StandardAutoloader implements ZendX_Loader_SplAutoloader
     public function registerNamespaces($namespaces)
     {
         if (!is_array($namespaces) && !$namespaces instanceof Traversable) {
-            throw new InvalidArgumentException('Namespace pairs must be either an array or Traversable');
+            require_once dirname(__FILE__) . '/Exception/InvalidArgumentException.php';
+            throw new ZendX_Loader_Exception_InvalidArgumentException('Namespace pairs must be either an array or Traversable');
         }
 
         foreach ($namespaces as $namespace => $directory) {
@@ -201,7 +203,8 @@ class ZendX_Loader_StandardAutoloader implements ZendX_Loader_SplAutoloader
     public function registerPrefixes($prefixes)
     {
         if (!is_array($prefixes) && !$prefixes instanceof Traversable) {
-            throw new InvalidArgumentException('Prefix pairs must be either an array or Traversable');
+            require_once dirname(__FILE__) . '/Exception/InvalidArgumentException.php';
+            throw new ZendX_Loader_Exception_InvalidArgumentException('Prefix pairs must be either an array or Traversable');
         }
 
         foreach ($prefixes as $prefix => $directory) {
@@ -260,13 +263,13 @@ class ZendX_Loader_StandardAutoloader implements ZendX_Loader_SplAutoloader
      */
     protected function transformClassNameToFilename($class, $directory)
     {
+        // $class may contain a namespace portion, in  which case we need
+        // to preserve any underscores in that portion.
+        preg_match('/(?P<namespace>.+\\\)?(?P<class>[^\\\]+$)/', $class, $matches);
         return $directory
-            . str_replace(
-                array(self::NS_SEPARATOR, self::PREFIX_SEPARATOR),
-                DIRECTORY_SEPARATOR,
-                $class
-            )
-            . '.php';
+             . str_replace(self::NS_SEPARATOR, '/', $matches['namespace'])
+             . str_replace(self::PREFIX_SEPARATOR, '/', $matches['class'])
+             . '.php';
     }
 
     /**
@@ -279,7 +282,8 @@ class ZendX_Loader_StandardAutoloader implements ZendX_Loader_SplAutoloader
     protected function loadClass($class, $type)
     {
         if (!in_array($type, array(self::LOAD_NS, self::LOAD_PREFIX, self::ACT_AS_FALLBACK))) {
-            throw new InvalidArgumentException();
+            require_once dirname(__FILE__) . '/Exception/InvalidArgumentException.php';
+            throw new ZendX_Loader_Exception_InvalidArgumentException();
         }
 
         // Fallback autoloading
@@ -307,6 +311,7 @@ class ZendX_Loader_StandardAutoloader implements ZendX_Loader_SplAutoloader
                 if (file_exists($filename)) {
                     return include $filename;
                 }
+                return false;
             }
         }
         return false;
