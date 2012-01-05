@@ -60,9 +60,8 @@ abstract class ZendX_Loader_AutoloaderFactory
      *
      * @param  array|Traversable $options (optional) options to use. Defaults to ZendX_Loader_StandardAutoloader
      * @return void
-     * @throws Exception\InvalidArgumentException for invalid options
-     * @throws Exception\InvalidArgumentException for unloadable autoloader classes
-     * @throws Exception\DomainException for autoloader classes not implementing SplAutoloader
+     * @throws ZendX_Loader_Exception_InvalidArgumentException for invalid options
+     * @throws ZendX_Loader_Exception_InvalidArgumentException for unloadable autoloader classes
      */
     public static function factory($options = null)
     {

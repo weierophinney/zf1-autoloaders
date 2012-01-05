@@ -67,13 +67,13 @@ class ZendX_Loader_ClassMapAutoloaderTest extends PHPUnit_Framework_TestCase
     public function testRegisteringNonExistentAutoloadMapRaisesInvalidArgumentException()
     {
         $dir = dirname(__FILE__) . '__foobar__';
-        $this->setExpectedException('InvalidArgumentException');
+        $this->setExpectedException('ZendX_Loader_Exception_InvalidArgumentException');
         $this->loader->registerAutoloadMap($dir);
     }
 
     public function testValidMapFileNotReturningMapRaisesInvalidArgumentException()
     {
-        $this->setExpectedException('InvalidArgumentException');
+        $this->setExpectedException('ZendX_Loader_Exception_InvalidArgumentException');
         $this->loader->registerAutoloadMap(dirname(__FILE__) . '/_files/badmap.php');
     }
 
@@ -87,8 +87,24 @@ class ZendX_Loader_ClassMapAutoloaderTest extends PHPUnit_Framework_TestCase
         $this->assertSame($map, $test);
     }
 
+    public function testAllowsRegisteringArrayAutoloadMapViaConstructor()
+    {
+        $map = array(
+            'ZendX_Loader_Exception' => dirname(__FILE__) . '/../../../library/ZendX/Loader/Exception.php',
+        );
+        $loader = new ZendX_Loader_ClassMapAutoloader(array($map));
+        $test = $loader->getAutoloadMap();
+        $this->assertSame($map, $test);
+    }
+
     public function testRegisteringValidMapFilePopulatesAutoloader()
     {
+        $this->loader->registerAutoloadMap(dirname(__FILE__) . '/_files/goodmap.php');
+        $map = $this->loader->getAutoloadMap();
+        $this->assertTrue(is_array($map));
+        $this->assertEquals(2, count($map));
+        // Just to make sure nothing changes after loading the same map again 
+        // (loadMapFromFile should just return)
         $this->loader->registerAutoloadMap(dirname(__FILE__) . '/_files/goodmap.php');
         $map = $this->loader->getAutoloadMap();
         $this->assertTrue(is_array($map));
@@ -159,5 +175,33 @@ class ZendX_Loader_ClassMapAutoloaderTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(count($this->loaders) < count($loaders));
         $test = array_pop($loaders);
         $this->assertEquals(array($this->loader, 'autoload'), $test);
+    }
+
+    public function testCanLoadClassMapFromPhar()
+    {
+        $map = 'phar://' . __DIR__ . '/_files/classmap.phar/test/.//../autoload_classmap.php';
+        $this->loader->registerAutoloadMap($map);
+        $this->loader->autoload('some_loadedclass');
+        $this->assertTrue(class_exists('some_loadedclass', false));
+        $test = $this->loader->getAutoloadMap();
+        $this->assertEquals(2, count($test));
+
+        // will not register duplicate, even with a different relative path
+        $map = 'phar://' . __DIR__ . '/_files/classmap.phar/test/./foo/../../autoload_classmap.php';
+        $this->loader->registerAutoloadMap($map);
+        $test = $this->loader->getAutoloadMap();
+        $this->assertEquals(2, count($test));
+    }
+
+    public function testCanLoadNamespacedClassFromPhar()
+    {
+        if (version_compare(PHP_VERSION, '5.3.0', '<')) {
+            $this->markTestSkipped('Namespace support is valid for PHP >= 5.3.0 only');
+        }
+
+        $map = 'phar://' . __DIR__ . '/_files/classmap.phar/test/.//../autoload_classmap.php';
+        $this->loader->registerAutoloadMap($map);
+        $this->loader->autoload('some\namespacedclass');
+        $this->assertTrue(class_exists('some\namespacedclass', false));
     }
 }

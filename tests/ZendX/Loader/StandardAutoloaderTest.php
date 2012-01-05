@@ -144,9 +144,9 @@ class ZendX_Loader_StandardAutoloaderTest extends PHPUnit_Framework_TestCase
     public function testAutoloadsVendorPrefixedClasses()
     {
         $loader = new ZendX_Loader_StandardAutoloader();
-        $loader->registerPrefix('ZendX_UnusualPrefix', dirname(__FILE__) . '/TestAsset');
-        $loader->autoload('ZendX_UnusualPrefix_PrefixedClass');
-        $this->assertTrue(class_exists('ZendX_UnusualPrefix_PrefixedClass', false));
+        $loader->registerPrefix('ZendTest_UnusualPrefix', dirname(__FILE__) . '/TestAsset/UnusualPrefix');
+        $loader->autoload('ZendTest_UnusualPrefix_PrefixedClass');
+        $this->assertTrue(class_exists('ZendTest_UnusualPrefix_PrefixedClass', false));
     }
 
     public function testCanActAsFallbackAutoloader()
@@ -154,8 +154,8 @@ class ZendX_Loader_StandardAutoloaderTest extends PHPUnit_Framework_TestCase
         $loader = new ZendX_Loader_StandardAutoloader();
         $loader->setFallbackAutoloader(true);
         set_include_path(dirname(__FILE__) . '/TestAsset/' . PATH_SEPARATOR . $this->includePath);
-        $loader->autoload('TestNamespace_FallbackCase');
-        $this->assertTrue(class_exists('TestNamespace_FallbackCase', false));
+        $loader->autoload('TestPrefix_FallbackCase');
+        $this->assertTrue(class_exists('TestPrefix_FallbackCase', false));
     }
 
     public function testReturnsFalseForUnresolveableClassNames()
@@ -172,5 +172,17 @@ class ZendX_Loader_StandardAutoloaderTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(count($this->loaders) < count($loaders));
         $test = array_pop($loaders);
         $this->assertEquals(array($loader, 'autoload'), $test);
+    }
+
+    public function testAutoloadsNamespacedClassesWithUnderscores()
+    {
+        if (version_compare(PHP_VERSION, '5.3.0', '<')) {
+            $this->markTestSkipped('Test only relevant for PHP >= 5.3.0');
+        }
+
+        $loader = new ZendX_Loader_StandardAutoloader();
+        $loader->registerNamespace('ZendTest\UnusualNamespace', dirname(__FILE__) . '/TestAsset');
+        $loader->autoload('ZendTest\UnusualNamespace\Name_Space\Namespaced_Class');
+        $this->assertTrue(class_exists('ZendTest\UnusualNamespace\Name_Space\Namespaced_Class', false));
     }
 }

@@ -94,7 +94,7 @@ class ZendX_Loader_StandardAutoloader implements ZendX_Loader_SplAutoloader
      * </code>
      *
      * @param  array|Traversable $options
-     * @return StandardAutoloader
+     * @return ZendX_Loader_StandardAutoloader
      */
     public function setOptions($options)
     {
@@ -129,7 +129,7 @@ class ZendX_Loader_StandardAutoloader implements ZendX_Loader_SplAutoloader
      * Set flag indicating fallback autoloader status
      *
      * @param  bool $flag
-     * @return StandardAutoloader
+     * @return ZendX_Loader_StandardAutoloader
      */
     public function setFallbackAutoloader($flag)
     {
@@ -152,7 +152,7 @@ class ZendX_Loader_StandardAutoloader implements ZendX_Loader_SplAutoloader
      *
      * @param  string $namespace
      * @param  string $directory
-     * @return StandardAutoloader
+     * @return ZendX_Loader_StandardAutoloader
      */
     public function registerNamespace($namespace, $directory)
     {
@@ -165,7 +165,7 @@ class ZendX_Loader_StandardAutoloader implements ZendX_Loader_SplAutoloader
      * Register many namespace/directory pairs at once
      *
      * @param  array $namespaces
-     * @return StandardAutoloader
+     * @return ZendX_Loader_StandardAutoloader
      */
     public function registerNamespaces($namespaces)
     {
@@ -185,7 +185,7 @@ class ZendX_Loader_StandardAutoloader implements ZendX_Loader_SplAutoloader
      *
      * @param  string $prefix
      * @param  string $directory
-     * @return StandardAutoloader
+     * @return ZendX_Loader_StandardAutoloader
      */
     public function registerPrefix($prefix, $directory)
     {
@@ -198,7 +198,7 @@ class ZendX_Loader_StandardAutoloader implements ZendX_Loader_SplAutoloader
      * Register many namespace/directory pairs at once
      *
      * @param  array $prefixes
-     * @return StandardAutoloader
+     * @return ZendX_Loader_StandardAutoloader
      */
     public function registerPrefixes($prefixes)
     {

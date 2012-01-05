@@ -65,7 +65,7 @@ class ZendX_Loader_ClassMapAutoloader implements ZendX_Loader_SplAutoloader
      * Proxies to {@link registerAutoloadMaps()}.
      * 
      * @param  array|Traversable $options 
-     * @return ClassMapAutoloader
+     * @return ZendX_Loader_ClassMapAutoloader
      */
     public function setOptions($options)
     {
@@ -83,7 +83,7 @@ class ZendX_Loader_ClassMapAutoloader implements ZendX_Loader_SplAutoloader
      * classname/file pairs.
      * 
      * @param  string|array $location 
-     * @return ClassMapAutoloader
+     * @return ZendX_Loader_ClassMapAutoloader
      */
     public function registerAutoloadMap($map)
     {
@@ -112,7 +112,7 @@ class ZendX_Loader_ClassMapAutoloader implements ZendX_Loader_SplAutoloader
      * Register many autoload maps at once
      * 
      * @param  array $locations 
-     * @return ClassMapAutoloader
+     * @return ZendX_Loader_ClassMapAutoloader
      */
     public function registerAutoloadMaps($locations)
     {
@@ -167,8 +167,8 @@ class ZendX_Loader_ClassMapAutoloader implements ZendX_Loader_SplAutoloader
      * location.
      * 
      * @param  string $location 
-     * @return ClassMapAutoloader|mixed
-     * @throws Exception\InvalidArgumentException for nonexistent locations
+     * @return ZendX_Loader_ClassMapAutoloader|mixed
+     * @throws ZendX_Loader_Exception_InvalidArgumentException for nonexistent locations
      */
     protected function loadMapFromFile($location)
     {
