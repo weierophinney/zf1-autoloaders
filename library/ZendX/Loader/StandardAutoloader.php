@@ -265,10 +265,15 @@ class ZendX_Loader_StandardAutoloader implements ZendX_Loader_SplAutoloader
     {
         // $class may contain a namespace portion, in  which case we need
         // to preserve any underscores in that portion.
+        $matches = array();
         preg_match('/(?P<namespace>.+\\\)?(?P<class>[^\\\]+$)/', $class, $matches);
+
+        $class     = (isset($matches['class'])) ? $matches['class'] : '';
+        $namespace = (isset($matches['namespace'])) ? $matches['namespace'] : '';
+
         return $directory
-             . str_replace(self::NS_SEPARATOR, '/', $matches['namespace'])
-             . str_replace(self::PREFIX_SEPARATOR, '/', $matches['class'])
+             . str_replace(self::NS_SEPARATOR, '/', $namespace)
+             . str_replace(self::PREFIX_SEPARATOR, '/', $class)
              . '.php';
     }
 

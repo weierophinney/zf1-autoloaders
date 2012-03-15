@@ -173,7 +173,7 @@ class ZendX_Loader_ClassMapAutoloaderTest extends PHPUnit_Framework_TestCase
         $this->loader->register();
         $loaders = spl_autoload_functions();
         $this->assertTrue(count($this->loaders) < count($loaders));
-        $test = array_pop($loaders);
+        $test = array_shift($loaders);
         $this->assertEquals(array($this->loader, 'autoload'), $test);
     }
 

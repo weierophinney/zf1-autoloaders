@@ -20,6 +20,8 @@
 
 require_once dirname(__FILE__) . '/SplAutoloader.php';
 
+if (class_exists('ZendX_Loader_AutoloaderFactory')) return;
+
 /**
  * @package    ZendX_Loader
  * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
@@ -27,6 +29,8 @@ require_once dirname(__FILE__) . '/SplAutoloader.php';
  */
 abstract class ZendX_Loader_AutoloaderFactory
 {
+    const STANDARD_AUTOLOADER = 'ZendX_Loader_StandardAutoloader';
+
     /**
      * @var array All autoloaders registered using the factory
      */
@@ -66,13 +70,20 @@ abstract class ZendX_Loader_AutoloaderFactory
     public static function factory($options = null)
     {
         if (null === $options) {
-            $options = array('ZendX_Loader_StandardAutoloader' => array());
+            if (!isset(self::$loaders[self::STANDARD_AUTOLOADER])) {
+                $autoloader = self::getStandardAutoloader();
+                $autoloader->register();
+                self::$loaders[self::STANDARD_AUTOLOADER] = $autoloader;
+            }
+
+            // Return so we don't hit the next check's exception (we're done here anyway)
+            return;
         }
 
         if (!is_array($options) && !($options instanceof Traversable)) {
-            require_once dirname(__FILE__) . '/Exception/InvalidArgumentException.php';
+            require_once 'Exception/InvalidArgumentException.php';
             throw new ZendX_Loader_Exception_InvalidArgumentException(
-                             'Options provided must be an array or Traversable'
+                'Options provided must be an array or Traversable'
             );
         }
 
@@ -80,12 +91,26 @@ abstract class ZendX_Loader_AutoloaderFactory
             if (!isset(self::$loaders[$class])) {
                 $autoloader = self::getStandardAutoloader();
                 if (!class_exists($class) && !$autoloader->autoload($class)) {
-                    require_once dirname(__FILE__) . '/Exception/InvalidArgumentException.php';
-                    throw new ZendX_Loader_Exception_InvalidArgumentException(
-                                sprintf('Autoloader class "%s" not loaded', $class)
-                    );
+                    require_once 'Exception/InvalidArgumentException.php';
+                    throw new ZendX_Loader_Exception_InvalidArgumentException(sprintf(
+                        'Autoloader class "%s" not loaded', 
+                        $class
+                    ));
                 }
-                if ($class === 'ZendX_Loader_StandardAutoloader') {
+
+                // unfortunately is_subclass_of is broken on some 5.3 versions
+                // additionally instanceof is also broken for this use case
+                if (version_compare(PHP_VERSION, '5.3.7', '>=')) {
+                        if (!is_subclass_of($class, 'ZendX_Loader_SplAutoloader')) {
+                        require_once 'Exception/InvalidArgumentException.php';
+                        throw new ZendX_Loader_Exception_InvalidArgumentException(sprintf(
+                            'Autoloader class %s must implement Zend\\Loader\\SplAutoloader', 
+                            $class
+                        ));
+                    }
+                }
+
+                if ($class === self::STANDARD_AUTOLOADER) {
                     $autoloader->setOptions($options);
                 } else {
                     $autoloader = new $class($options);
@@ -120,7 +145,7 @@ abstract class ZendX_Loader_AutoloaderFactory
     public static function getRegisteredAutoloader($class)
     {
         if (!isset(self::$loaders[$class])) {
-            require_once dirname(__FILE__) . '/Exception/InvalidArgumentException.php';
+            require_once 'Exception/InvalidArgumentException.php';
             throw new ZendX_Loader_Exception_InvalidArgumentException(sprintf('Autoloader class "%s" not loaded', $class));
         }
         return self::$loaders[$class];
@@ -173,8 +198,11 @@ abstract class ZendX_Loader_AutoloaderFactory
             return self::$standardAutoloader;
         }
 
-        if (!class_exists('ZendX_Loader_StandardAutoloader')) {
-            require_once dirname(__FILE__) . '/StandardAutoloader.php';
+        // Extract the filename from the classname
+        $stdAutoloader = substr(strrchr(self::STANDARD_AUTOLOADER, '_'), 1);
+
+        if (!class_exists(self::STANDARD_AUTOLOADER)) {
+            require_once dirname(__FILE__) . "/$stdAutoloader.php";
         }
         $loader = new ZendX_Loader_StandardAutoloader();
         self::$standardAutoloader = $loader;

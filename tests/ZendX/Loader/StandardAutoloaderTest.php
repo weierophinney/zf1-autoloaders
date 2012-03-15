@@ -164,6 +164,13 @@ class ZendX_Loader_StandardAutoloaderTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($loader->autoload('Some\Fake\Classname'));
     }
 
+    public function testReturnsFalseForInvalidClassNames()
+    {
+        $loader = new ZendX_Loader_StandardAutoloader();
+        $loader->setFallbackAutoloader(true);
+        $this->assertFalse($loader->autoload('Some_Invalid_Classname_'));
+    }
+
     public function testRegisterRegistersCallbackWithSplAutoload()
     {
         $loader = new ZendX_Loader_StandardAutoloader();

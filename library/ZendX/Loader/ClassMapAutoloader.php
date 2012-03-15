@@ -156,7 +156,11 @@ class ZendX_Loader_ClassMapAutoloader implements ZendX_Loader_SplAutoloader
      */
     public function register()
     {
-        spl_autoload_register(array($this, 'autoload'), true);
+        if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
+            spl_autoload_register(array($this, 'autoload'), true, true);
+        } else {
+            spl_autoload_register(array($this, 'autoload'), true);
+        }
     }
 
     /**
