@@ -32,7 +32,7 @@
  *                              file
  */
 
-$libPath = dirname(__FILE__) . '/../library';
+$libPath = getenv('LIB_PATH') ? getenv('LIB_PATH') : __DIR__ . '/../library';
 if (!is_dir($libPath)) {
     // Try to load StandardAutoloader from include_path
     if (false === include('ZendX/Loader/StandardAutoloader.php')) {
@@ -41,7 +41,7 @@ if (!is_dir($libPath)) {
     }
 } else {
     // Try to load StandardAutoloader from library
-    if (false === include(dirname(__FILE__) . '/../library/ZendX/Loader/StandardAutoloader.php')) {
+    if (false === include($libPath . '/ZendX/Loader/StandardAutoloader.php')) {
         echo "Unable to locate autoloader via library; aborting" . PHP_EOL;
         exit(2);
     }
@@ -87,7 +87,7 @@ if (isset($opts->l)) {
 }
 
 $usingStdout = false;
-$output = $path . DIRECTORY_SEPARATOR . '.classmap.php';
+$output = $path . DIRECTORY_SEPARATOR . 'autoload_classmap.php';
 if (isset($opts->o)) {
     $output = $opts->o;
     if ('-' == $output) {
