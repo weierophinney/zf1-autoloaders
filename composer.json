@@ -1,0 +1,12 @@
+{
+    "name": "weierophinney/zf1-autoloaders",
+    "description": "Port of ZF2 autoloaders to ZF1",
+    "license": "BSD-3-Clause",
+    "authors": [],
+    "require": { },
+    "autoload": {
+        "psr-0": {
+            "": "library/"
+        }
+    }
+}
